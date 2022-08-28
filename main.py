@@ -14,13 +14,13 @@ def db_table_val(message):
 
 
 def db_table_add(note: str, user_id: int):
-    cursor.execute(f'INSERT INTO notes (note, user_id) VALUES (?,?)', (note, user_id))
+    cursor.execute('INSERT INTO notes (note, user_id) VALUES (?,?)', (note, user_id))
     conn.commit()
 
 
 def del_notes(message):
     de_note = message.text
-    query = f"DELETE FROM notes WHERE note  = ? and  (user_id = ?)"
+    query = 'DELETE FROM notes WHERE note  = ? and  (user_id = ?)'
     cursor.execute(query, (de_note, message.chat.id,))
     conn.commit()
     bot.send_message(message.chat.id, 'Заметка удалена')
@@ -28,7 +28,7 @@ def del_notes(message):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, f'<b>Hello, this is test message</b>', parse_mode='html')
+    bot.send_message(message.chat.id, '<b>Hello, this is test message</b>', parse_mode='html')
     bot.send_message(message.chat.id, 'Руководство на русском:')
     bot.send_message(message.chat.id,
                      'Если нужно добавить заметку напиши рандомный текст в чат, заметка будет добавлена')
