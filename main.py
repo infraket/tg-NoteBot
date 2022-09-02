@@ -18,12 +18,29 @@ def db_table_add(note: str, user_id: int):
     conn.commit()
 
 
-def del_notes(message):
+def del_note(message):
     de_note = message.text
     query = 'DELETE FROM notes WHERE note  = ? and  (user_id = ?)'
     cursor.execute(query, (de_note, message.chat.id,))
     conn.commit()
     bot.send_message(message.chat.id, 'Заметка удалена')
+
+
+def del_notes_all(message):
+    query = 'DELETE FROM notes WHERE (user_id = ?)'
+    cursor.execute(query, (message.chat.id,))
+    conn.commit()
+    bot.send_message(message.chat.id, 'Все заметки удалены')
+
+
+@bot.message_handler(commands=['delete'])
+def del_notes(message):
+    murkup_del = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    de_one = types.KeyboardButton('Delete Note')
+    de_all = types.KeyboardButton('Delete ALL Notes')
+    back = types.KeyboardButton('Back')
+    murkup_del.add(de_one, de_all, back)
+    bot.send_message(message.chat.id, 'choice', reply_markup=murkup_del)
 
 
 @bot.message_handler(commands=['start'])
@@ -43,7 +60,6 @@ def get_notes(message):
     de = types.KeyboardButton('Delete')
     all = types.KeyboardButton('All Notes')
     murkup.add(up, de, all)
-
     bot.send_message(message.chat.id, 'choice', reply_markup=murkup)
 
 
@@ -56,13 +72,22 @@ def get_text_messages(message):
         bot.send_message(message.chat.id, 'Введите текст')
 
     elif message.text == 'Delete':
-        bot.send_message(message.chat.id, 'Скопируйте ненужную заметку для удаления')
-        bot.register_next_step_handler(message, del_notes)
+        del_notes(message)
+    elif message.text == 'Delete Note':
+        bot.send_message(message.chat.id, 'Скопируйте ненужную заметку')
+        bot.register_next_step_handler(message, del_note)
+    elif message.text == 'Delete ALL Notes':
+        del_notes_all(message)
+
+    elif message.text == 'Back':
+        get_notes(message)
+
     else:
         try:
             db_table_add(note=message.text, user_id=message.chat.id)
 
             bot.send_message(message.chat.id, 'Заметка добавлена')
+
         except:
             bot.send_message(message.chat.id, 'Заметка уже существует')
 
